@@ -42,7 +42,7 @@ library(dplyr)
 library(tidyverse)
 housing_data <- read_excel("data/week-6-housing.xlsx")
 housing_data <- housing_data %>% 
-  mutate(ctyname = case_when(is.na(ctyname) & zip5 <= 98502  ~ "REDMOND",
+  mutate(ctyname = case_when(is.na(ctyname) & zip5 = 98502  ~ "REDMOND",
                                 TRUE ~ ctyname))
 housing_data
 ##Check distributions of the data
