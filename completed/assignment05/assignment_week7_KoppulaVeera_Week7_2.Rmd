@@ -1,0 +1,89 @@
+---
+title: "RMarkdown Assignment Week7 Student survey"
+author: "Koppula Veera"
+date: March 23rd 2018
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r eval=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##As a data science intern with newly learned knowledge in skills in statistical correlation and R programming, you will analyze the results of a survey recently given to college students. You learn that the research question being investigated is: “Is there a significant relationship between the amount of time spent reading and the time spent watching television?” You are also interested if there are other significant relationships that can be discovered? The survey data is located in this StudentSurvey.csv file.
+
+```{r eval=TRUE, echo=FALSE}
+setwd("/Users/veerareddykoppula/git/DSC520/DSC520/data")
+survey <- read.csv("student-survey.csv")
+library(ggm)
+```
+##1. Use R to calculate the covariance of the Survey variables and provide an explanation of why you would use this calculation and what the results indicate.
+```{r eval=TRUE, echo=FALSE}
+cov(survey$TimeReading,survey$TimeTV)
+cov(survey$TimeReading,survey$Happiness)
+cov(survey$TimeReading,survey$Gender)
+cov(survey$TimeTV,survey$Happiness)
+cov(survey$TimeTV,survey$Gender)
+cov(survey$Happiness,survey$Gender)
+```
+
+I am using these variable pairs, without considering Gender as it is binary a binary Varibale. The results indicate that Time Reading and Time Tv are inversely correlated. This makes sense since if you’re reading it’s harder to spend time on watching tv. Time reading and Happiness also appear inversely correlated. This one is interesting and a bit surprising. Maybe if watching tv and reading are not balanced, makes one less happier. Lastly, Time Tv and Happiness are strongly correlated. This makes sense as maybe people are more happier watching tv that makes people release immediate happy harmones.
+
+##2. Examine the Survey data variables. What measurement is being used for the variables? Explain what effect changing the measurement being used for the variables would have on the covariance calculation. Would this be a problem? Explain and provide a better alternative if needed.
+
+Time reading looks to be in hours, Time Tv looks to be in minutes, Happiness looks like on scale 0-100, and gender is binary, 0 or 1. The first 3 are numerical values. Time reading is small compared to Time Tv, exaggerating the differences. Same applies to Time Reading and Happiness. Time Tv and Happiness are similar in numbers. All the variables are hard to compare with gender since it is binary. However, scaling Time TV would not result in a big difference in covariance direction, it just scales it by a factor of 60(Min to hours). It shouldn't cause any problem, and I would just omit computing Covariance between Gender and the others since its not very relevant to the research in question. We could remove Gender from the whole dataset for evaluation.
+
+##3. Choose the type of correlation test to perform, explain why you chose this test, and make a prediction if the test yields a positive or negative correlation?
+
+```{r eval=TRUE, echo=FALSE}
+cov(survey$TimeReading,survey$TimeTV)
+```
+
+The research question i am looking at is -“Is there a significant relationship between the amount of time spent reading and the time spent watching television?”I chose this one because data shows a direct correlation between Time Reading and Time Tv. The negative correlation suggests as one variable goes up the other varibale goes down. My prediction is if someone spends more time reading their time watching tv goes down (expected as there is limited time in a day).
+
+##4. Perform a correlation analysis of:
+#a. All variables
+
+```{r eval=TRUE, echo=FALSE}
+cor(survey, use = "complete.obs", method = "pearson")
+```
+#b. A single correlation between two a pair of the variables
+
+```{r eval=TRUE, echo=FALSE}
+cor(survey$TimeReading, survey$Happiness)
+```
+
+#c. Repeat your correlation test in step 2 but set the confidence interval at 99%
+
+```{r eval=TRUE, echo=FALSE}
+cor.test(survey$TimeReading, survey$Happiness, conf.level = .99)
+```
+
+#d.Describe what the calculations in the correlation matrix suggest about the relationship between the variables. Be specific with your explanation.
+
+Time reading and time tv have a negative correlation, suggesting when one goes up the other tends to goes down. Time reading and Happiness have negative correlation, suggesting again when one variable goes up the other variable goes down. The relationship is opposite for happiness and time tv as well. Gender is harder to examine since it’s a binary variable and could be difficult to asceratain correltion with other variables. 
+
+##5. Calculate the correlation coefficient and the coefficient of determination, describe what you conclude about the results.
+
+```{r eval=TRUE, echo=FALSE}
+survey1 <- survey[, c("TimeReading", "TimeTV", "Happiness")] 
+cor(survey1)
+cor(survey1)^2
+```
+
+I conclude that Time Reading and Time TV have strong correlation and Time TV and Happiness have moderate correlation.
+
+##6. Based on your analysis can you say that watching more TV caused students to read less? Explain.
+
+Based on above point 5, about 78% of the variability of Time Reading can be explained by correlation with Time TV. The other 22% is explained by other variability. I would conclude there is strong evidence that more time reading leads to less time watching tv.
+
+##7. Pick three variables and perform a partial correlation, documenting which variable you are “controlling”. Explain how this changes your interpretation and explanation of the results.
+
+```{r eval=TRUE, echo=FALSE}
+pc <- pcor(c("TimeReading", "TimeTV", "Happiness"), var(survey1))
+pc^2
+```
+
+I am controlling "Happiness" as a variable here. This doesn’t really change my interpretation by much. It shows that TimeTv still accounts TimeReading about the same as before. Results appear in the same direction with "Happiness" as a controlled variable.
