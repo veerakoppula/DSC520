@@ -1,0 +1,196 @@
+---
+title: "Week 8 Assignment 8.2.3"
+author: "Koppula Veera"
+date: July 30 2021
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r eval=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Housing Data
+#Work individually on this assignment. You are encouraged to collaborate on ideas and strategies pertinent to this assignment. Data for this assignment is focused on real estate transactions recorded from 1964 to 2016 and can be found in Housing.xlsx. Using your skills in statistical correlation, multiple regression, and R programming, you are interested in the following variables: Sale Price and several other possible predictors.
+
+```{r eval=TRUE, echo=FALSE}
+setwd("/Users/veerareddykoppula/git/DSC520/DSC520")
+library(ggplot2)
+library("readxl")
+library(MASS)
+library(car)
+theme_set(theme_minimal())
+housing <- read_excel("data/week-6-housing.xlsx")
+housing_orginial <- read_excel("data/week-6-housing.xlsx")
+```
+#If you worked with the Housing dataset in previous week – you are in luck, you likely have already found any issues in the dataset and made the necessary transformations. If not, you will want to take some time looking at the data with all your new skills and identifying if you have any clean up that needs to happen.
+```{r eval=TRUE, echo=FALSE}
+head(housing)
+str(housing)
+housing <- within(housing, {
+  addr_full <- NULL
+  building_grade <- NULL
+  ctyname <- NULL
+  lat <- NULL
+  lon <- NULL
+  sale_instrument <- NULL 
+  sale_reason <- NULL
+  sale_warning <- NULL
+  sitetype <- NULL
+  year_renovated <- NULL 
+})
+housing_Updated <- na.omit(housing)
+str(housing_Updated)
+head(housing_Updated)
+```
+## Complete the following:
+#Explain any transformations or modifications you made to the dataset
+
+I did not want to do a lot of data removal, I am not sure which data would be useful for the assignment and I wanted to leave some options. I did remove ten columns. I chose this by reviewing the structure. I could see that even though the city was left blank on some rows the zip & postalcity was not.Considering that we use zips/postalcity for tracking our locations I felt only one of these columns might be needed and the one with the best data is the zip &postal city. In addition since we were not provided translation reference for what the sales reason, instrument and warning are - they did not seem to provide significant information for the analysis. I also ran a command to clean up data that still had missing elements after the removal of those ten columns. Though it appears that the the removal of the na’s was not needed after removing the columns. After all the data cleanup I have 12865 lines of data left in the data set (this should be signifant for rest of the analysis)
+
+
+#Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price and several additional predictors of your choice. Explain the basis for your additional predictor selections.
+
+```{r eval=TRUE, echo=FALSE}
+RegMode8.1 <- lm(housing_Updated$`Sale Price`~housing_Updated$square_feet_total_living, data = housing_Updated)
+RegMode8.2 <- lm(housing_Updated$`Sale Price`~housing_Updated$square_feet_total_living+bath_full_count+bath_half_count+bath_3qtr_count +bedrooms+sq_ft_lot, 
+  data = housing_Updated)
+```
+
+
+I used lm command to create the code for the variables, because I did it in this fashion it already created the summaries for me. We can see a jump in the r2 and adjusted r2 between these two. f the second variable I chose bathrooms, bedrooms count along with squarefootage as predictors. Based on my experience,among houses with same squarefootage, houses with higher bedrooms and bathrooms have better potential for higher price.
+
+#Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics? Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?
+
+```{r eval=TRUE, echo=FALSE}
+summary(RegMode8.1)
+summary(RegMode8.2)
+```
+
+I used the r lm to create the code for the variables, because I did it in this fashion it already created the summaries for me. We can see a jump in the r2 and adjusted r2 between these two.
+
+Residual standard error: 360200 on 12863 degrees of freedom Multiple R-squared: 0.2066, Adjusted R-squared: 0.2066
+
+Residual standard error: 358900 on 12858 degrees of freedom Multiple R-squared: 0.2127, Adjusted R-squared: 0.2123
+Based on my experience,among houses with same squarefootage, houses with higher bedrooms and bathrooms have better potential for higher price,also the results indicate same directionality.
+
+#Considering the parameters of the multiple regression model you have created. What are the standardized betas for each parameter and what do the values indicate?
+
+I used the compareCoefs and the anova to help me look at the information. from this I was able to see that the lot size, and bathrooms have the most significance when it comes to the difference in the comparisons. So with that if i had to do a full analysis I would used price per square foot, square foot of the lot and number of  bedrooms.
+
+```{r eval=TRUE, echo=FALSE}
+compareCoefs(RegMode8.1, RegMode8.2)
+anova(RegMode8.1, RegMode8.2)
+```
+
+#Calculate the confidence intervals for the parameters in your model and explain what the results indicate.
+
+Our confidence level is defaulted to 95%. I was able to locate the means pair testing in the statistics option, this allowed me to see the confidence intervals as well as the means of the Price and square footage.
+
+```{r eval=TRUE, echo=FALSE}
+library(MASS, pos = 18)
+with(housing_Updated, (t.test(housing_Updated$`Sale Price`, housing_Updated$square_feet_total_living, alternative = 'two.sided', conf.level = .95, paired = TRUE)))
+```
+
+#Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.
+
+```{r eval=TRUE, echo=FALSE}
+compareCoefs(RegMode8.1, RegMode8.2)
+```
+
+#Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.
+
+```{r eval=TRUE, echo=FALSE}
+RegModelOrg <- 
+  lm(housing_orginial$`Sale Price`~square_feet_total_living+bath_3qtr_count+bath_full_count+bath_half_count+bedrooms+building_grade+lat+lon+present_use+sale_instrument+sale_reason+sq_ft_lot+year_built+year_renovated+zip5,
+   data=housing_orginial)
+summary(RegModelOrg)
+outlierTest(RegModelOrg)
+outlierTest(RegMode8.1)
+outlierTest(RegMode8.2)
+```
+
+with above evaluations I decided to remove the 11 rows of data that are outliers. The original data had line 6433 and with the adjusted models row 4649 is listed. 
+I created updated data frames as well as models with out the outlier rows.
+
+```{r eval=TRUE, echo=FALSE}
+Out_housing_orginial <- housing_orginial[-c(11992,6430,6438,6437,6431,6436,6441,6432,6442,6433,4649),
+  ]
+str(Out_housing_orginial)
+Out_housing_updated <- housing_Updated[-c(11992,6430,6438,6437,6431,6436,6441,6432,6442,6433,4649),]
+str(Out_housing_updated)
+RegMode8.3 <- lm(Out_housing_updated$`Sale Price`~square_feet_total_living, data = Out_housing_updated)
+summary(RegMode8.3)
+RegMode8.4 <- lm(Out_housing_updated$`Sale Price`~square_feet_total_living+bath_full_count+bath_half_count+bath_3qtr_count +bedrooms+sq_ft_lot, 
+  data = Out_housing_updated)
+summary(RegMode8.4)
+```
+
+#Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+
+```{r eval=TRUE, echo=FALSE}
+Out_housing_updated$standardized.residuals <- rstandard(RegMode8.4)
+Out_housing_updated$studentized.residuals <- rstudent(RegMode8.4)
+Out_housing_updated$cooks.distance <- cooks.distance(RegMode8.4)
+Out_housing_updated$dfbeta <- dfbeta(RegMode8.4)
+Out_housing_updated$leverage <- hatvalues(RegMode8.4)
+Out_housing_updated$covariance.ratios <- covratio(RegMode8.4)
+str(Out_housing_updated)
+```
+
+#Use the appropriate function to show the sum of large residuals.
+
+```{r eval=TRUE, echo=FALSE}
+Out_housing_updated$large.residual <- Out_housing_updated$standardized.residuals > 2 | Out_housing_updated$studentized.residuals < -2
+str(Out_housing_updated)
+```
+
+#Which specific variables have large residuals (only cases that evaluate as TRUE)?
+
+```{r eval=TRUE, echo=FALSE}
+sum(Out_housing_updated$large.residual)
+Out_housing_updated[Out_housing_updated$large.residual , c("Sale Price", "square_feet_total_living", "bath_full_count", "bath_half_count", "bath_3qtr_count", "bedrooms", "sq_ft_lot")]
+```
+
+#Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
+
+```{r eval=TRUE, echo=FALSE}
+Out_housing_updated[Out_housing_updated$large.residual , c("leverage" , "cooks.distance","covariance.ratios") ]
+```
+#Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
+
+```{r eval=TRUE,echo=FALSE}
+dwt(RegMode8.4)
+```
+
+#Perform the necessary calculations to assess the assumption of no and state if the condition is met or not.
+
+```{r eval=TRUE,echo=FALSE}
+library(olsrr)
+ols_coll_diag(RegMode8.4)
+```
+
+#Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
+
+```{r eval=TRUE,echo=FALSE}
+with(Out_housing_updated, hist(standardized.residuals, scale="frequency", breaks="Sturges", col="red", 
+  xlab="Standardized Residuals"))
+library(lattice, pos = 24)
+xyplot(square_feet_total_living ~ `Sale Price` | large.residual, groups = large.residual, type = "p", pch = 16, 
+  auto.key = list(border = TRUE), par.settings = simpleTheme(pch = 16), scales = list(x = list(relation = 'same'), 
+  y = list(relation = 'same')), data = Out_housing_updated)
+library("RcmdrMisc")
+with(Out_housing_updated, discretePlot(bedrooms, by = prop_type, scale = "frequency"))
+
+scatterplotMatrix(~`Sale Price`+square_feet_total_living | large.residual, 
+                       regLine = FALSE, smooth = FALSE, diagonal = list(method = "density"), by.groups = TRUE, 
+  data = Out_housing_updated)
+```
+
+High frequency of availability of houses are 4 bedrooms, followed by 3 bedrooms. They are the most sold and their average price per square foot living space is concentrated.
+There are some anamolies with houses that have either very large or small square foot living space to price per square foot.
+
+#Overall, is this regression model unbiased? If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
+This regression model is fairly unbiased. When a model is unbiased, it has Samples selected for building the model truly represents the distribution of entire population in the data set.
