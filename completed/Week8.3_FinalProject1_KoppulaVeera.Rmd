@@ -3,9 +3,9 @@ title: "Week8.3_FinalProject1_KoppulaVeera"
 author: "Veera Koppula"
 date: July 30 2021
 output:
+  word_document: default
   html_document: default
   pdf_document: default
-  word_document: default
 ---
 
 ```{r eval=TRUE, echo=FALSE}
@@ -76,7 +76,7 @@ olsrr
 ##What types of plots and tables will help you to illustrate the ﬁndings to your research questions?
 
 Following plots:
-histogram (with Kernal Density plot)
+histogram
 boxplot
 scatterplot (with Matrices)
 line chart
