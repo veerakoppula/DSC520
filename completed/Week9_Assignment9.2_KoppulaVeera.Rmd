@@ -1,0 +1,71 @@
+---
+title: "Week9_Assignment9.2_KoppulaVeera"
+author: "Veera Koppula"
+date: August 04 2021
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r eval=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Fit a Logistic Regression Model to Thoracic Surgery Binary Dataset.
+#For this problem, you will be working with the thoracic surgery data set from the University of California Irvine machine learning repository. This dataset contains information on life expectancy in lung cancer patients after surgery. The underlying thoracic surgery data is in ARFF format. This is a text-based format with information on each of the attributes. You can load this data using a package such as foreign or by cutting and pasting the data section into a CSV file.
+```{r eval=TRUE, echo=FALSE}
+setwd("/Users/veerareddykoppula/git/DSC520/DSC520")
+library(RWeka)
+thoracic=read.arff("data/ThoraricSurgery.arff")
+```
+##Assignment Instructions:
+#Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+```{r eval=TRUE, echo=FALSE}
+thoracic.glm <- glm(Risk1Yr ~ ., data = thoracic, family = binomial)
+summary(thoracic.glm)
+```
+#According to the summary, which variables had the greatest effect on the survival rate?
+Variables that have greatest effect on survival rate are - AGE, Type 2 DM - diabetes mellitus(PRE17), PAD - peripheral arterial diseases(PRE25)
+
+#To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+```{r eval=TRUE, echo=FALSE}
+library(ROCR)
+prob.t <- predict(thoracic.glm, newdata=thoracic, type="response")
+pred.t <- prediction(prob.t, thoracic$Risk1Yr)
+auc.t <- performance(pred.t, measure = "auc")
+auc.t <- auc.t@y.values[[1]]
+auc.t
+```
+Accuracy prediction for my model is about 23%
+
+##Fit a Logistic Regression Model
+```{r eval=TRUE, echo=FALSE}
+library(readr)
+library(ResourceSelection)
+ binclass <- read_csv("data/binary-classifier-data.csv")
+ str(binclass)
+```
+#Fit a logistic regression model to the binary-classifier-data.csv dataset
+```{r eval=TRUE, echo=FALSE}
+modelfit1 <- glm(label ~ x, data = binclass, family = "binomial")
+summary(modelfit1)
+```
+#The dataset (found in binary-classifier-data.csv) contains three variables; label, x, and y. The label variable is either 0 or 1 and is the output we want to predict using the x and y variables.
+```{r eval=TRUE, echo=FALSE}
+modelfit2 <- glm(label ~ x + y, data = binclass, family = "binomial")
+summary(modelfit2)
+```
+#What is the accuracy of the logistic regression classifier?
+```{r eval=TRUE, echo=FALSE}
+library(ROCR)
+prob <- predict(modelfit2, newdata=binclass, type="response")
+pred <- prediction(prob, binclass$label)
+auc <- performance(pred, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+
+Accuracy using ROC model is 57% - This is the accuracy of the logical regression classifier
+
+#Keep this assignment handy, as you will be comparing your results from this week to next week.
