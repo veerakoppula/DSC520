@@ -4,8 +4,8 @@ author: "Veera Koppula"
 date: July 30 2021
 output:
   word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r eval=TRUE, echo=FALSE}
@@ -14,9 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##Identify a topic or a problem that you want to research.  Provide an introduction that explains the problem statement or topic you are addressing. Why would someone be interested in this?  How is it a data science problem?
 
-We live in interesting times with a pandemic that affects the way of life of every living being on the globe. Every government and public agency has tried to either slow down spread of Covid-19  by travel restrictions/lockdowns/masking & social distancing policies or mitigate its impacts by vaccination campaign. I would like to explore if the mitigation approaches taken by several governments on the spread of Covid-19 had any impact and which approach(s) had higher impact on slowing down the spread. 
-Governments,health agencies and Public health policy makers across different globe should be very interested in this analysis. This should help understand the likely effective course to be taken, whenever such a pandemic appears next time. 
-There are various variables and data elements that could be contributing or affecting the slowdown of the Covid-19 spread. Also the sheer volume of data that could be collected and analyzed, to understand the likely correlation and causation factors make this a data science problem. 
+We live in interesting times with a pandemic that affects the way of life of every living being on the globe. Every government and public agency has tried to either slow down spread of Covid-19  by travel restrictions/lockdowns/masking & social distancing policies or mitigate its impacts by vaccination campaign. I would like to explore impact of factors that could impact the outcome of Covid infection. (as sex,age, comorbities etc)
 
 ##Draft 5-10 Research questions that focus on the problem statement/topic.
 
@@ -25,17 +23,17 @@ What are the various conditions that impact the spread of the Covid-19 virus?
 How is the data collected by identified sources?
 Incase of any missing elements/gaps in data, how are they mutated?
 Which geographical region is a best representation for sample analysis?
-What are different mitigation approaches taken to slow the spread of Covid-19 and their timeline?
-What is the vaccination timeline (1 dose and 2 dosage) for the same geographical region?
+are there any comorbities for the patient?
+what is the age/sec/Race that defines the patient?
 
 ##Provide a concise explanation of how you plan to address this problem statement.
 
 I would like to validate different data sources,to collect the information on Covid-19 infection/case rate(Concentrating on USA), Collect different mitigation actions taken to slow the spread of infections and Collect vaccination rate for the same period/regions. Once this data is collected, I would like to look at the geographical region that has best representation by completeness and cohesive data. Once the sample is identified, would like to preform calculations on correlating factors and as well try to identify a model that would should best possible predictors for infection spread rate.
-This calculated model should identify the best possible predictors that would determine the spread of virus.
+This calculated model should identify the best possible predictors that would determine the outcome of virus infection.
 
 ##Discuss how your proposed approach will address (fully or partially) this problem.
 
-as described above, the calculated model should give us the best predictors to calculate the possible virus spread rate. This should help understanding the correlation of mitigation/vacciation on spread of virus, and should give a likely course of action that could be taken by public health care policy makers to address current/future pandemics.
+as described above, the calculated model should give us the best predictors to calculate the possible outcome of virus infection. This should help understanding the correlation of seriousness of virus outcomes, this would help health agencies to take specific actions to address or prioritize any specific demographic that could be impacted by the virus more than others.
 
 ##Do some digging and find at least 3 datasets that you can use to address the issue. (There is not a required number of fields or rows for these datasets)
 #Original source where the data was obtained is cited and, if possible, hyperlinked.
@@ -76,7 +74,7 @@ olsrr
 ##What types of plots and tables will help you to illustrate the ﬁndings to your research questions?
 
 Following plots:
-histogram
+histogram (with Kernal Density plot)
 boxplot
 scatterplot (with Matrices)
 line chart
