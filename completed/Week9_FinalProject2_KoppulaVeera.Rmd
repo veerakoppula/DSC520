@@ -3,8 +3,8 @@ title: "Week9_FinalProject2_KoppulaVeera"
 author: "Veera Koppula"
 date: August 04 2021
 output:
-  html_document: default
   word_document: default
+  html_document: default
   pdf_document: default
 ---
 
@@ -23,7 +23,7 @@ datadict <- read_excel("data/data_dictionary_covid_cases_public.xlsx")
 datadict[,"...2", drop=FALSE]
 ```
 I have removed from the original dataset where data is either empty, marked as "Missing"/"Uknown" from the columns cdc_case_earliest_dt,pos_spec_dt,onset_dt,current_status,sex,age_group,race_ethinicity_combined,hosp_yn,icu_yn,death_yn and medcond_yn.
-Essentially I have removed all null,missing or unknown (uncollected values). This brought up the total rows down to 481,929 rows.
+Essentially I have removed all null,missing or unknown (uncollected values). This brought up the total rows down to 481,381 rows.
 This data has been saved into a csv format as filename "COVID-19_Case_Surveillance_Public_Use_Data.csv"
 
 After the filtering out of the missing(uncollected valies), current_status column has same value "Labroratiry-confirmed case" in all rows. 
@@ -45,6 +45,7 @@ str(coviddata)
 head(coviddata)
 ```
 ##What do you not know how to do right now that you need to learn to import and cleanup your dataset?
+
 I have managed to cleanup most of the data and removed the null values. 
 I am trying to look at summarizing values to extract metadata that represents the combination of elements properly to calculate outcomes of hospitalization(hosp_yn), ICU admittance (icu_yn) and death (deat_yn)
 
@@ -53,26 +54,73 @@ I am trying to look at summarizing values to extract metadata that represents th
 There are some complicating elements like Mask mandate, Social distancing, lockdowns and Vaccination could have overlap impact on outcome of cases. I am looking on to filterout the information that could confound the information in the collected data source, that might have got impacted outcome of the cases with same sax/age/race and comorbidities. 
 
 ##What are different ways you could look at this data to answer the questions you want to answer?
-
+```{r eval=TRUE, echo=FALSE}
+library(dplyr)
+library(tidyverse)
+library(purrr)
+coviddata_with.no.impact <- coviddata %>% 
+  filter(hosp_yn == "No" & icu_yn == "No" & death_yn == "No")
+coviddata_with.impact <- coviddata %>%
+  filter(hosp_yn =="Yes" | icu_yn == "Yes" | death_yn == "Yes")
+```
 I could look at this data to collect the factors that could influence serious outcomes or at the same time probably factors that would have prevented serious outcomes. 
 However given the complex factors that could contribute tp serious outcomes (such as the social/economic status of the patient), geographical location, unknown progression of novel virus etc could probably make the summary of data as inconclusive or provide partial model that would give predictability of outcomes. 
 
 ##Do you plan to slice and dice the data in different ways, create new variables, or join separate data frames to create new summary information? Explain.
 
-I am planning to slice the information by age, race and commodities factors to map possible outcome. 
-I am looking other data sources to from a data frame, that could be used to overlay on the sliced summary over infection detection/onset date, to see if any possible implications factors that could have changed outcome of infections for certain patients.
+```{r eval=TRUE, echo=FALSE}
+library(dplyr)
+library(tidyverse)
+library(purrr)
+coviddata_with.no.impact <- coviddata_with.no.impact %>% mutate(Impacted = "No")
+coviddata_with.impact <- coviddata_with.impact %>% mutate(Impacted = "Yes")
+coviddataa_with_calculatedImpact <- rbind(coviddata_with.impact,coviddata_with.no.impact)
+coviddataa_with_calculatedImpact$cdc_case_earliest_dt <- as.Date(coviddataa_with_calculatedImpact$cdc_case_earliest_dt, format = "%Y/%m/%d")
+coviddataa_with_calculatedImpact$onset_dt <- as.Date(coviddataa_with_calculatedImpact$onset_dt, format = "%Y/%m/%d")
+coviddata$cdc_case_earliest_dt <- as.Date(coviddata$cdc_case_earliest_dt, format = "%Y/%m/%d")
+coviddata$onset_dt <- as.Date(coviddata$onset_dt, format = "%Y/%m/%d")
+coviddata_with.impact$cdc_case_earliest_dt <- as.Date(coviddata_with.impact$cdc_case_earliest_dt, format = "%Y/%m/%d")
+coviddata_with.impact$onset_dt <- as.Date(coviddata_with.impact$onset_dt, format = "%Y/%m/%d")
+coviddata_with.no.impact$cdc_case_earliest_dt <- as.Date(coviddata_with.no.impact$cdc_case_earliest_dt, format = "%Y/%m/%d")
+coviddata_with.no.impact$onset_dt <- as.Date(coviddata_with.no.impact$onset_dt, format = "%Y/%m/%d")
+```
+
+I have divided the data into 2 seperate data frames without any impact because of infection , and rows with a positive test leading to some impact as hospitalizaiton or ICU admittance or death. 
+Based on these 2 data frames calculated a new variable "Impact" that sets if the postive infection led to an impact or not. 
+Have combined the data back into an updated data frame.
+Also while doing things, I have changed the type of data of cdc_case_earliest_dt and onset_dt to date type from charaterset for future usage.
 
 ##How could you summarize your data to answer key questions?
 
 I could slice and summarize the data frame by the predictors such as sex/age and comorbities along with the date of infection identification (with possible overlay factors) to answer the key question of predictability of Hospitalization/ICU or death.
 
 ##What types of plots and tables will help you to illustrate the findings to your questions? Ensure that all graph plots have axis titles, legend if necessary, scales are appropriate, appropriate geoms used, etc.).
+```{r eval=TRUE,echo=FALSE}
 
-I am looking to do a scatterplot of the information thats sliced, overlaying with any information from the confounding datapoint identified from factors that are not captured in current data set
+library(ggplot2)
+ggplot(data = coviddata_with.impact, aes(x = cdc_case_earliest_dt, y = Impacted ,color = age_group, group = age_group)) +
+    geom_line() +    ggtitle("Serious outcome of Infection by Age Group By Month") +
+  xlab("Year-Month ") + ylab("Impacted")
+ggplot(data = coviddata_with.impact, aes(x = cdc_case_earliest_dt, y = Impacted ,color = race_ethnicity_combined, group = race_ethnicity_combined)) +
+    geom_line() +    ggtitle("Serious outcome of Infection by Race&Ethinicity By Month") +
+  xlab("Year-Month ") + ylab("Impacted")
+
+ggplot(coviddata_with.impact, aes(x=cdc_case_earliest_dt, y=age_group, col=sex)) + geom_point() + ggtitle("Serious outcome of Infection by Age and distributed by Sex") +
+  xlab("Year-Month ") + ylab("Age Group")
+
+ggplot() +
+    geom_jitter(data=coviddata_with.impact, aes(x=1, y=cdc_case_earliest_dt, color=medcond_yn)) + ggtitle("Serious outcome of Infection with pre exisiting conditions") +
+  xlab(" ") + ylab("Year-Month")
+```
+
+Arranging a plot by Age shows 0-9yrs and 70+yrs have been the most vulnerable group - which is expected as they are the most immune compromised
+Looking at data by Race/Ethnicity - looks like white, non-Hispanic are more prone for worse outcomes with the virus infection
+Distribution of serious outcomes is almost equally distributed by sex across the age ranges 
+When plotted all the cases distribution against pre-exisiting conditions, it looks like there is a strong correlation between pre-exisiting conditions and serious outcomes of infection.
 
 ##What do you not know how to do right now that you need to learn to answer your questions?
 
 finding another data set and gleaning the information to connect from the new data source that contains the factors that could influence virus spread/intesity of the infection to multiple rows in the cdc captured data set from above.
 
 ##Do you plan on incorporating any machine learning techniques to answer your research questions? Explain.
-I am not looking to incorporate machine learning techniques to answer my research question. However we could generate dataset that could drive a machine learning model to help predict the outcomes better in a much larger data set of 27.9M rows that we cleaned to fill out the unknowns/missing captured information.
+I am looking at predticting the serious impact outcome using a regression model, especially using comorbities as an indicator
